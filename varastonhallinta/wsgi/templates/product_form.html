@@ -1,0 +1,65 @@
+<div class="spacer"></div>
+
+<form method="post">
+  <div class="form-group row">
+    <label for="saapumispvm" class="col-lg-2 col-form-label">Saapumispäivämäärä</label>
+    <div class="col-lg-10">
+      <input type="text" id="datepicker" name="saapumispvm" placeholder="VVVV-KK-PP" class="form-control"
+        value="{{ request.form['saapumispvm'] or product and (product['saapumispvm'] if product['saapumispvm']) }}">
+        <!-- supress None by "x if x" -->
+      </input>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="kuvaus" class="col-lg-2 col-form-label">Kuvaus</label>
+    <div class="col-lg-10">
+      <input type="text" name="kuvaus" class="form-control"
+        value="{{ request.form['kuvaus'] or product and product['kuvaus'] }}">
+      </input>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="koodi" class="col-lg-2 col-form-label">Tuotteen numero</label>
+    <div class="col-lg-10">
+      <input type="text" name="koodi" class="form-control"
+        value="{{ request.form['koodi'] or product and (product['koodi'] if product['koodi']) }}">
+      </input>
+    </div>
+  </div>    
+  <div class="form-group row">
+    <label for="tila" class="col-lg-2 col-form-label">Tila</label>
+    <div class="col-lg-10">
+      <select class="form-control" id="tilaselect" name=tila_id>
+        {% for tila in tilat %}
+          <option value="{{ tila['id'] }}" 
+                  {% if tila['id']|string == (request.form['tila'] or product and product['tila_id'])|string %} selected {% endif %}>
+            {{ tila['kuvaus'] }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="toimitustapa" class="col-lg-2 col-form-label">Toimitustapa</label>
+    <div class="col-lg-10">
+      <select class="form-control" id="toimitustapaselect" name=toimitustapa_id>
+        <option value=""></option>
+        {% for toimitustapa in toimitustavat %}
+          <option value="{{ toimitustapa['id'] }}"
+                  {% if toimitustapa['id']|string == (request.form['toimitustapa'] or product and product['toimitustapa_id'])|string %} selected {% endif %}>
+            {{ toimitustapa['kuvaus'] }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="toimituspvm" class="col-lg-2 col-form-label">Toimituspäivämäärä</label>
+    <div class="col-lg-10">
+      <input type="text" id="datepicker2" name="toimituspvm" placeholder="VVVV-KK-PP" class="form-control"
+        value="{{ request.form['toimituspvm'] or product and (product['toimituspvm'] if product['toimituspvm']) }}">
+      </input>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">{{ button_text }}</button>
+</form>
