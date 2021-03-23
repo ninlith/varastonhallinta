@@ -113,7 +113,7 @@ def worker_logger_configurer(queue, loglevel):
     root.setLevel(loglevel)
 
 def listener_process(queue):
-    """Logging listener process."""
+    """Forward logging messages from queue to output logger."""
     output_logger_configurer()
     while True:
         try:

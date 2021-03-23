@@ -21,7 +21,7 @@ from clients.webruntime import launch_runtime
 from wsgi.server import wsgi_server
 
 def main():
-    """Main function."""
+    """Run the program."""
 
     # Command-line arguments.
     args = conf.parse_command_line_args()
