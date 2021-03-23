@@ -12,6 +12,7 @@
        data-url="{{ url_for('products_json') }}"
        data-pagination="true"
        data-page-list="[10, 25, 50, 100, 1000, all]"
+       data-side-pagination="server"
        data-search="true"
        data-toolbar="#toolbar"
        data-show-columns="true"
@@ -22,70 +23,47 @@
        data-cookie-id-table="saveId"  
        data-id-field="id"
        data-click-to-select="true"
-       data-filter-control="true"
-       data-filter-control-visible="false"
-       data-show-filter-control-switch="true"
+       data-buttons="buttons"
        data-trim-on-search="false"
        data-show-search-clear-button="false">
   <thead>
     <tr>
       <th data-field="saapumispvm"
-          data-sortable="true"
-          data-filter-control="input"
-          data-filter-control-placeholder="Suodata">
+          data-sortable="true">
         Saapumispvm.
       </th>
       <th data-field="kuvaus"
-          data-sortable="true"
-          data-filter-control="input"
-          data-filter-control-placeholder="Suodata">
+          data-sortable="true">
         Kuvaus
       </th>
       <th data-field="hinta"
           data-sortable="true"
-          data-visible="false"
-          data-filter-control="input"
-          data-filter-control-placeholder="Suodata">
+          data-visible="false">
         Hinta
       </th>
       <th data-field="koodi"
-          data-sortable="true"
-          data-filter-control="input"
-          data-filter-control-placeholder="Suodata">
+          data-sortable="true">
         Numero
       </th>
       <th data-field="sijainti"
-          data-sortable="true"
-          data-filter-control="input"
-          data-filter-starts-with-search="true"
-          data-filter-control-placeholder="Suodata">
+          data-sortable="true">
         Sijainti
       </th>
       <th data-field="tila"
-          data-sortable="true"
-          data-filter-control="input"
-          data-filter-starts-with-search="true"
-          data-filter-control-placeholder="Suodata">
+          data-sortable="true">
         Tila
       </th>
       <th data-field="toimitustapa"
-          data-sortable="true"
-          data-filter-control="input"
-          data-filter-starts-with-search="true"
-          data-filter-control-placeholder="Suodata">
+          data-sortable="true">
         Toimitustapa
       </th>
       <th data-field="toimituspvm"
-          data-sortable="true"
-          data-filter-control="input"
-          data-filter-control-placeholder="Suodata">
+          data-sortable="true">
         Toimituspvm.
       </th>
       <th data-field="lisätiedot"
           data-sortable="true"
-          data-visible="false"
-          data-filter-control="input"
-          data-filter-control-placeholder="Suodata">
+          data-visible="false">
         Lisätiedot</th>
       <th data-field="id"
           data-formatter="operationsFormatter"

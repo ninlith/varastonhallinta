@@ -1,4 +1,22 @@
 // ----------------------------------------------------------------------------
+// bootstrap-table custom buttons
+// ----------------------------------------------------------------------------
+function buttons () {
+    return {
+        btnAdvancedSearch: {
+            text: "Tarkennettu haku",
+            icon: "fa-search-plus",
+            event: function () {
+                alert("Toteutus kesken...")
+            },
+            attributes: {
+                title: "Tarkennettu haku"
+            }
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
 // bootstrap-table formatters
 // ----------------------------------------------------------------------------
 function operationsFormatter(value, row, index, field) {

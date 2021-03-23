@@ -7,6 +7,8 @@
 import logging
 import secrets
 import sqlite3
+from time import perf_counter
+import regex as re
 from flask import (Flask, render_template, request, url_for, flash, redirect,
                    jsonify, abort, g)
 from auxiliary.conf import PROJECT_NAME
@@ -53,9 +55,30 @@ def index():
 
 @app.route("/products_json")
 def products_json():
+    limit = request.args.get("limit")
+    offset = request.args.get("offset")
+    search = request.args.get("search")
+    order = request.args.get("order") or "DESC"
+    sort = request.args.get("sort") or "saapumispvm"
+    if sort in {"id", "saapumispvm", "kuvaus", "hinta", "toimituspvm",
+                "lisätiedot"}:
+        sort = "T." + sort
+    elif sort == "koodi":
+        sort = "CAST(T.koodi AS INTEGER)"
+
+    # Precompile a regular expression pattern.
+    try:
+        reg = re.compile(search)
+    except re.error as e:
+        logger.debug(f"Invalid regular expression: {e}")
+        reg = re.compile(r"\b\B")  # do not match anything
+
     conn = get_db_connection()
+    conn.create_function("REGEXP", 2,
+                         lambda _, item: reg.search(item or "") is not None)
+    start = perf_counter()
     rows = conn.execute(
-        """
+        f"""
         SELECT
           T.id,
           T.saapumispvm,
@@ -66,16 +89,32 @@ def products_json():
           Tilat.kuvaus AS tila,
           Toimitustavat.kuvaus AS toimitustapa,
           T.toimituspvm,
-          T.lisätiedot
+          T.lisätiedot,
+          COUNT(*) OVER() AS total
         FROM
           Tuotteet T LEFT JOIN Sijainnit ON T.sijainti_id = Sijainnit.id
                      LEFT JOIN Tilat ON T.tila_id = Tilat.id
                      LEFT JOIN Toimitustavat ON
                                T.toimitustapa_id = Toimitustavat.id
-        ORDER BY
-          T.saapumispvm DESC
-        """).fetchall()
-    return jsonify([dict(ix) for ix in rows])
+        WHERE
+          '%saapumispvm=' || IFNULL(T.saapumispvm, '-')
+          || '%kuvaus=' || REPLACE(IFNULL(T.kuvaus, '-'), '%', '%%')
+          || '%numero=' || IFNULL(T.koodi, '-')
+          || '%sijainti=' || IFNULL(sijainti, '-')
+          || '%tila=' || tila
+          || '%toimitustapa=' || IFNULL(toimitustapa, '-')
+          || '%toimituspvm=' || IFNULL(T.toimituspvm, '-')
+          REGEXP ?
+        ORDER BY {sort} {order}
+        LIMIT ?
+        OFFSET ?
+        """, (search, limit, offset)).fetchall()
+    stop = perf_counter()
+    logger.debug(f"Query time: {stop - start} s")
+    return jsonify(
+        {"total": rows and rows[0]["total"] or 0,
+         "rows": [{k:v for k, v in dict(row).items() if k != "total"}
+                  for row in rows]})
 
 @app.route("/<int:product_id>")
 def product_json(product_id):
