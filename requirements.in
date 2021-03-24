@@ -1,0 +1,10 @@
+appdirs
+colorlog
+Flask
+Paste
+pip-tools
+pyinstaller
+regex
+urllib3
+waitress
+webruntime
