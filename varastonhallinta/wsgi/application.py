@@ -66,19 +66,22 @@ def products_json():
     elif sort == "koodi":
         sort = "CAST(T.koodi AS INTEGER)"
 
-    # Precompile a regular expression pattern.
-    try:
-        reg = re.compile(search)
-    except re.error as e:
-        logger.debug(f"Invalid regular expression: {e}")
-        reg = re.compile(r"\b\B")  # do not match anything
+    parameters = []
+    if search:
+        try:
+            reg = re.compile(search)  # precompile a regex pattern
+        except re.error as e:
+            logger.debug(f"Invalid regular expression: {e}")
+            return jsonify({"total": 0, "rows": []})
+        else:
+            parameters.append(search)
+    parameters.extend([limit, offset])
 
     conn = get_db_connection()
     conn.create_function("REGEXP", 2,
                          lambda _, item: reg.search(item or "") is not None)
-    start = perf_counter()
-    rows = conn.execute(
-        f"""
+    command_parts = [
+        """
         SELECT
           T.id,
           T.saapumispvm,
@@ -96,6 +99,8 @@ def products_json():
                      LEFT JOIN Tilat ON T.tila_id = Tilat.id
                      LEFT JOIN Toimitustavat ON
                                T.toimitustapa_id = Toimitustavat.id
+        """,
+        """
         WHERE
           '%saapumispvm=' || IFNULL(T.saapumispvm, '-')
           || '%kuvaus=' || REPLACE(IFNULL(T.kuvaus, '-'), '%', '%%')
@@ -105,10 +110,17 @@ def products_json():
           || '%toimitustapa=' || IFNULL(toimitustapa, '-')
           || '%toimituspvm=' || IFNULL(T.toimituspvm, '-')
           REGEXP ?
+        """,
+        f"""
         ORDER BY {sort} {order}
         LIMIT ?
         OFFSET ?
-        """, (search, limit, offset)).fetchall()
+        """]
+    if search not in parameters:
+        del command_parts[1]
+    command = "".join(command_parts)
+    start = perf_counter()
+    rows = conn.execute(command, parameters).fetchall()
     stop = perf_counter()
     logger.debug(f"Query time: {stop - start} s")
     return jsonify(
