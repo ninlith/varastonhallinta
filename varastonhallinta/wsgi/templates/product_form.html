@@ -29,7 +29,7 @@
   <div class="form-group row">
     <label for="tila" class="col-lg-2 col-form-label">Tila</label>
     <div class="col-lg-10">
-      <select class="form-control" id="tilaselect" name=tila_id>
+      <select class="custom-select" id="tilaselect" name=tila_id>
         {% for tila in tilat %}
           <option value="{{ tila['id'] }}" 
                   {% if tila['id']|string == (request.form['tila'] or product and product['tila_id'])|string %} selected {% endif %}>
@@ -42,7 +42,7 @@
   <div class="form-group row">
     <label for="toimitustapa" class="col-lg-2 col-form-label">Toimitustapa</label>
     <div class="col-lg-10">
-      <select class="form-control" id="toimitustapaselect" name=toimitustapa_id>
+      <select class="custom-select" id="toimitustapaselect" name=toimitustapa_id>
         <option value=""></option>
         {% for toimitustapa in toimitustavat %}
           <option value="{{ toimitustapa['id'] }}"
