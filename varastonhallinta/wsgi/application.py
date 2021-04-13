@@ -11,7 +11,7 @@ from time import perf_counter
 import regex as re
 from flask import (Flask, render_template, request, url_for, flash, redirect,
                    jsonify, abort, g)
-from auxiliary.conf import PROJECT_NAME
+from auxiliary.conf import PROJECT_NAME, VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ def close_connection(exception):
 @app.context_processor
 def inject_variables():
     """Inject variables into the template context."""
-    return dict(project_name=PROJECT_NAME.capitalize())
+    return dict(project_name=PROJECT_NAME.capitalize(), version=VERSION)
 
 @app.route("/")
 def index():
