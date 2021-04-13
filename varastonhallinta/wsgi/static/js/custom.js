@@ -1,4 +1,44 @@
 // ----------------------------------------------------------------------------
+// advanced search
+// ----------------------------------------------------------------------------
+$("#advancedSearchSubmit").click(function () {
+    if (document.getElementsByClassName("search-input")[0].value
+            === "(tarkennettu haku)") {
+        $("#table").bootstrapTable("refresh")
+    }
+    else {
+        $("#table").bootstrapTable("resetSearch", "(tarkennettu haku)")
+    }
+})
+
+function queryParams(params) {
+    params.regex_search = document.getElementById("regex_search").value
+    params.ignore_case = document.getElementById("ignore_case").checked
+    params.numero = [
+        document.getElementById("numero_alku").value,
+        document.getElementById("numero_loppu").value
+        ].join(",")
+    params.saapumispvm = [
+        document.getElementById("saapumispvm_alku").value,
+        document.getElementById("saapumispvm_loppu").value
+        ].join(",")
+    params.toimituspvm = [
+        document.getElementById("toimituspvm_alku").value,
+        document.getElementById("toimituspvm_loppu").value
+        ].join(",")
+    params.sijainti = Array.from(
+            document.querySelectorAll("#sijainti option:checked")
+        ).map(o => o.value).join(",")
+    params.tila = Array.from(
+            document.querySelectorAll("#tila option:checked")
+        ).map(o => o.value).join(",")
+    params.toimitustapa = Array.from(
+            document.querySelectorAll("#toimitustapa option:checked")
+        ).map(o => o.value).join(",")
+    return params
+}
+
+// ----------------------------------------------------------------------------
 // bootstrap-table custom buttons
 // ----------------------------------------------------------------------------
 function buttons () {
@@ -6,11 +46,11 @@ function buttons () {
         btnAdvancedSearch: {
             text: "Tarkennettu haku",
             icon: "fa-search-plus",
-            event: function () {
-                alert("Toteutus kesken...")
-            },
             attributes: {
-                title: "Tarkennettu haku"
+                id: "tarkennettu_haku",
+                title: "Tarkennettu haku",
+                "data-toggle": "modal",
+                "data-target": "#advancedSearch"
             }
         }
     }
@@ -48,32 +88,31 @@ $("#datepicker,#datepicker2").datepicker({
     language: "fi",
 })
 
+$(".input-daterange").datepicker({
+    format: "yyyy-mm-dd",
+    weekStart: 1,
+    todayBtn: "linked",
+    language: "fi",
+    clearBtn: true
+})
+
+// ----------------------------------------------------------------------------
+// bootstrap-select settings
+// ----------------------------------------------------------------------------
+$(".selectpicker").selectpicker({
+    iconBase: "fa",
+    tickIcon: "fa-check",
+    noneSelectedText: "Ei mitään valittuna",
+    style: "",
+    styleBase: "form-control"
+});
+
 // ----------------------------------------------------------------------------
 // keyboard shortcuts
 // ----------------------------------------------------------------------------
-/*
 window.focus()
 document.addEventListener("keydown", e => {
-    if (e.ctrlKey && e.key == "p") {
-        window.print()
-    }
-    else if(e.ctrlKey && e.key == "r" || e.key == "F5") {
-        location.reload()
-    }
-    else if(e.ctrlKey && e.key == "s") {
-        console.log("save")
-    }
-    else if(e.ctrlKey && e.key == "f") {
-        console.log("find")
-    }
-    else if(e.altKey && e.key == "ArrowLeft") {
-        window.history.back()
-    }
-    else if(e.altKey && e.key == "ArrowRight") {
-        window.history.forward()
-    }
-    else if(e.altKey && e.key == "Home") {
-        window.location.assign("/")
+    if (e.ctrlKey && e.key == "7") {
+        $("#tarkennettu_haku").click()
     }
 }, false)
-*/

@@ -3,6 +3,8 @@
 {% block content %}
 <h1>{% block title %} Tuotteet {% endblock %}</h1>
 
+{% include 'advanced_search.html' %}
+
 <div id="toolbar" class="d-print-none">
   <a href="{{url_for('create')}}" class="btn btn-primary"><i class="fa fa-plus"></i> Lisää tuote</a>
 </div>
@@ -24,8 +26,9 @@
        data-id-field="id"
        data-click-to-select="true"
        data-buttons="buttons"
+       data-query-params="queryParams"
        data-trim-on-search="false"
-       data-show-search-clear-button="false">
+       data-show-search-clear-button="true">
   <thead>
     <tr>
       <th data-field="saapumispvm"

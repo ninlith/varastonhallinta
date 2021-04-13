@@ -1,0 +1,115 @@
+<!-- Modal -->
+<div class="modal fade" id="advancedSearch" tabindex="-1" role="dialog" aria-labelledby="Tarkennettu haku" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Tarkennettu haku</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <div class="form-group">
+            <div class="input-group">
+              <input type="text" class="form-control input-group-prepend" id="regex_search" placeholder="Säännöllinen lauseke...">
+              <div class="input-group-append">
+                <div class="input-group-text custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input ml-0" id="ignore_case" checked>
+                  <label class="custom-control-label ml-2" for="ignore_case">
+                    Ohita aakkoskoko 
+                    <!-- https://termipankki.fi/tepa/fi/haku/merkkikokoriippumaton -->
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div>
+              <small id="regex_search_help" class="form-text text-muted">
+                Jokaisen rivin kentät on eroteltu kappaleen merkillä (¶).
+                <!-- Rivien määrä nolla tai enemmän. Passiivimuotoinen verbirakenne. -->
+              </small>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="saapumispvm" class="col-sm-2 col-form-label">Saapumispvm.</label>
+            <div class="col-sm-10">
+                <div class="input-group input-daterange" id="saapumispvm">
+                  <input type="text" class="form-control input-group-prepend" id="saapumispvm_alku" />
+                  <div class="input-group-append">
+                    <span class="input-group-text">–</span>
+                  </div>
+                  <input type="text" class="form-control input-group-append" id="saapumispvm_loppu" />
+                </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="numero" class="col-sm-2 col-form-label">Numero</label>
+            <div class="col-sm-10">
+                <div class="input-group" id="numero">
+                  <input type="text" class="form-control input-group-prepend" id="numero_alku" />
+                  <div class="input-group-append">
+                    <span class="input-group-text">–</span>
+                  </div>
+                  <input type="text" class="form-control input-group-append" id="numero_loppu" />
+                </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="sijainti" class="col-sm-2 col-form-label">Sijainti</label>
+            <div class="col-sm-10">
+              <select id="sijainti" class="selectpicker w-100" multiple>
+                <option selected value="Varasto">Varasto</option>
+                <option selected value="Välivarasto">Välivarasto</option>
+                <option selected value="-">-</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="tila" class="col-sm-2 col-form-label">Tila</label>
+            <div class="col-sm-10">
+              <select id="tila" class="selectpicker w-100" multiple>
+                <option selected value="Myyty">Myyty</option>
+                <option selected value="Varattu">Varattu</option>
+                <option selected value="Odottaa">Odottaa</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="toimitustapa" class="col-sm-2 col-form-label">Toimitustapa</label>
+            <div class="col-sm-10">
+              <select id="toimitustapa" class="selectpicker w-100" multiple>
+                <option selected value="Nouto">Nouto</option>
+                <option selected value="Toimitus">Toimitus</option>
+                <option selected value="-">-</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group row">
+            <label for="toimituspvm" class="col-sm-2 col-form-label">Toimituspvm.</label>
+            <div class="col-sm-10">
+                <div class="input-group input-daterange" id="toimituspvm">
+                  <input type="text" class="form-control input-group-prepend" id="toimituspvm_alku" />
+                  <div class="input-group-append">
+                    <span class="input-group-text">–</span>
+                  </div>
+                  <input type="text" class="form-control input-group-append" id="toimituspvm_loppu" />
+                </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Peruuta</button>
+          <button type="submit" class="btn btn-primary" data-dismiss="modal" id="advancedSearchSubmit">Hae</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -33,6 +33,80 @@ def get_product(product_id) -> sqlite3.Row:
         abort(404)
     return product
 
+class SearchHelper:
+    def __init__(self):
+        self.command_parts = []
+        self.search_conditions = []
+        self.parameters = []
+        self.precompiled_regex_pattern = None
+        self.no_results = False
+
+    def execute(self, conn):
+        reg = self.precompiled_regex_pattern
+        if reg:
+            conn.create_function(
+                "REGEXP", 2,
+                lambda _, item: reg.search(item or "") is not None)
+        conn.set_trace_callback(logger.debug)
+        command = "".join(self.command_parts)
+        start = perf_counter()
+        rows = conn.execute(command, self.parameters).fetchall()
+        stop = perf_counter()
+        logger.debug(f"Query time: {stop - start} s")
+        return rows
+
+    def append(self, part, parameters=None):
+        self.command_parts.append(part)
+        if parameters is not None:
+            self.parameters.extend(parameters)
+
+    def append_where_clause(self):
+        if self.search_conditions:
+            self.command_parts.append(
+                "WHERE " + " AND ".join(self.search_conditions))
+
+    def add_multiselect(self, column, valuestring, maxvalues):
+        values = valuestring.split(",")
+        if len(values) < maxvalues:
+            try:
+                values.remove("-")
+            except ValueError:
+                nullstring = ""
+            else:
+                nullstring = f" OR {column} IS NULL"
+            qmarks = ", ".join(["?"]*len(values))
+            self.search_conditions.append(
+                f"({column} IN ({qmarks}){nullstring})")
+            self.parameters.extend(values)
+        elif not values:
+            self.no_results = True
+
+    def add_range(self, column, start=None, end=None):
+        if start and end:
+            if start == end:
+                self.search_conditions.append(f"{column} = ?")
+                self.parameters.append(start)
+            else:
+                self.search_conditions.append(f"{column} BETWEEN ? AND ?")
+                self.parameters.extend([start, end])
+        elif start:
+            self.search_conditions.append(f"{column} >= ?")
+            self.parameters.append(start)
+        elif end:
+            self.search_conditions.append(f"{column} <= ?")
+            self.parameters.append(end)
+
+    def set_regex(self, data, pattern, ignore_case):
+        flags = (re.IGNORECASE,) if ignore_case else ()
+        try:
+            self.precompiled_regex_pattern = re.compile(pattern, *flags)
+        except re.error as e:
+            logger.debug(f"Invalid regular expression: {e}")
+            self.no_results = True
+        else:
+            self.search_conditions.append(f"{data} REGEXP ?")
+            self.parameters.append(pattern)
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_urlsafe(16)  # for the session cookie
 
@@ -55,8 +129,6 @@ def index():
 
 @app.route("/products_json")
 def products_json():
-    limit = request.args.get("limit")
-    offset = request.args.get("offset")
     search = request.args.get("search")
     order = request.args.get("order") or "DESC"
     sort = request.args.get("sort") or "saapumispvm"
@@ -66,21 +138,8 @@ def products_json():
     elif sort == "koodi":
         sort = "CAST(T.koodi AS INTEGER)"
 
-    parameters = []
-    if search:
-        try:
-            reg = re.compile(search)  # precompile a regex pattern
-        except re.error as e:
-            logger.debug(f"Invalid regular expression: {e}")
-            return jsonify({"total": 0, "rows": []})
-        else:
-            parameters.append(search)
-    parameters.extend([limit, offset])
-
-    conn = get_db_connection()
-    conn.create_function("REGEXP", 2,
-                         lambda _, item: reg.search(item or "") is not None)
-    command_parts = [
+    query = SearchHelper()
+    query.append(
         """
         SELECT
           T.id,
@@ -99,30 +158,46 @@ def products_json():
                      LEFT JOIN Tilat ON T.tila_id = Tilat.id
                      LEFT JOIN Toimitustavat ON
                                T.toimitustapa_id = Toimitustavat.id
-        """,
-        """
-        WHERE
-          '%saapumispvm=' || IFNULL(T.saapumispvm, '-')
-          || '%kuvaus=' || REPLACE(IFNULL(T.kuvaus, '-'), '%', '%%')
-          || '%numero=' || IFNULL(T.koodi, '-')
-          || '%sijainti=' || IFNULL(sijainti, '-')
-          || '%tila=' || tila
-          || '%toimitustapa=' || IFNULL(toimitustapa, '-')
-          || '%toimituspvm=' || IFNULL(T.toimituspvm, '-')
-          REGEXP ?
-        """,
+        """)
+    regex_data = ("""
+        IFNULL(T.saapumispvm, '-')
+        || '¶' || IFNULL(T.kuvaus, '-')
+        || '¶' || IFNULL(T.koodi, '-')
+        || '¶' || IFNULL(sijainti, '-')
+        || '¶' || tila
+        || '¶' || IFNULL(toimitustapa, '-')
+        || '¶' || IFNULL(T.toimituspvm, '-')
+        """)
+    if search == "(tarkennettu haku)":
+        query.add_range("CAST(T.koodi AS INTEGER)",
+                        *request.args.get("numero").split(","))
+        query.add_range("T.saapumispvm",
+                        *request.args.get("saapumispvm").split(","))
+        query.add_range("T.toimituspvm",
+                        *request.args.get("toimituspvm").split(","))
+        query.add_multiselect("sijainti", request.args.get("sijainti"), 3)
+        query.add_multiselect("tila", request.args.get("tila"), 3)
+        query.add_multiselect("toimitustapa",
+                              request.args.get("toimitustapa"),
+                              3)
+        regex_search = request.args.get("regex_search")
+        if regex_search:
+            query.set_regex(regex_data,
+                            regex_search,
+                            request.args.get("ignore_case") == 'true')
+    elif search:
+        query.set_regex(regex_data, search, True)
+    if query.no_results:
+        return jsonify({"total": 0, "rows": []})
+    query.append_where_clause()
+    query.append(
         f"""
         ORDER BY {sort} {order}
         LIMIT ?
         OFFSET ?
-        """]
-    if search not in parameters:
-        del command_parts[1]
-    command = "".join(command_parts)
-    start = perf_counter()
-    rows = conn.execute(command, parameters).fetchall()
-    stop = perf_counter()
-    logger.debug(f"Query time: {stop - start} s")
+        """,
+        [request.args.get("limit"), request.args.get("offset")])
+    rows = query.execute(get_db_connection())
     return jsonify(
         {"total": rows and rows[0]["total"] or 0,
          "rows": [{k:v for k, v in dict(row).items() if k != "total"}
