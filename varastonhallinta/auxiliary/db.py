@@ -53,38 +53,5 @@ def create_database(pathname: pathlib.Path):
         importlib.resources.read_text(__package__, "schema.sql"))
     connection.executescript(
         importlib.resources.read_text(__package__, "initial_data.sql"))
-
-    # random data
-    cur = connection.cursor()
-    import datetime
-    import time
-    import random
-    random.seed(0)
-    def random_date(option):
-        if option == 1:
-            d = random.randint(1, int(time.time()))
-        else:
-            d = random.randint(int(time.time())*2, int(time.time())*4)
-        return str(datetime.date.fromtimestamp(d).strftime('%Y-%m-%d'))
-    for i in range(1000):
-        tt = random.choice([None, 1, 2])
-        product = random.choice(["pieni ", "iso ", "", ""])
-        product += random.choice(["harmaa", "sininen", "vihreä", "musta",
-                                  "valkoinen", "oranssi", "sinivihreä",
-                                  "violetti", "läpinäkyvä"]) + " "
-        product += random.choice(["kulma", "", ""])
-        product += random.choice(["tuoli", "sohva", "pöytä", "kaappi",
-                                  "hylly"])
-        cur.execute("INSERT INTO tuotteet (saapumispvm, kuvaus, koodi, "
-                    "sijainti_id, tila_id, toimitustapa_id, toimituspvm) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (random_date(1),
-                     product.capitalize(),
-                     i,
-                     random.choice([1, 2]),
-                     random.choice([1, 2, 3]),
-                     tt,
-                     tt and random_date(2)))
-
     connection.commit()
     connection.close()
