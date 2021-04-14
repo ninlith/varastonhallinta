@@ -11,4 +11,4 @@ INSERT INTO Toimitustavat (kuvaus) VALUES
     ('Nouto'),
     ('Toimitus');
 
-INSERT INTO Muuttujat (id, muuttolaatikoiden_määrä) VALUES (0, 0);
+INSERT INTO Symbolit (id, muuttolaatikoiden_määrä) VALUES (0, 0);

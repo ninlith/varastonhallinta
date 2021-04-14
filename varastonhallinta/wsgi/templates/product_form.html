@@ -19,6 +19,14 @@
     </div>
   </div>
   <div class="form-group row">
+    <label for="hinta" class="col-lg-2 col-form-label">Hinta</label>
+    <div class="col-lg-10">
+      <input type="text" name="hinta" class="form-control"
+        value="{{ request.form['hinta'] or product and (product['hinta'] if product['hinta']) }}">
+      </input>
+    </div>
+  </div>
+  <div class="form-group row">
     <label for="koodi" class="col-lg-2 col-form-label">Tuotteen numero</label>
     <div class="col-lg-10">
       <input type="text" name="koodi" class="form-control"
@@ -26,6 +34,20 @@
       </input>
     </div>
   </div>    
+  <div class="form-group row">
+    <label for="sijainti" class="col-lg-2 col-form-label">Sijainti</label>
+    <div class="col-lg-10">
+      <select class="custom-select" id="sijaintiselect" name=sijainti_id>
+        <option value=""></option>
+        {% for sijainti in sijainnit %}
+          <option value="{{ sijainti['id'] }}"
+                  {% if sijainti['id']|string == (request.form['sijainti'] or product and product['sijainti_id'])|string %} selected {% endif %}>
+            {{ sijainti['kuvaus'] }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
   <div class="form-group row">
     <label for="tila" class="col-lg-2 col-form-label">Tila</label>
     <div class="col-lg-10">
@@ -40,24 +62,18 @@
     </div>
   </div>
   <div class="form-group row">
-    <label for="toimitustapa" class="col-lg-2 col-form-label">Toimitustapa</label>
+    <label for="lisätiedot" class="col-lg-2 col-form-label">Lisätiedot</label>
     <div class="col-lg-10">
-      <select class="custom-select" id="toimitustapaselect" name=toimitustapa_id>
-        <option value=""></option>
-        {% for toimitustapa in toimitustavat %}
-          <option value="{{ toimitustapa['id'] }}"
-                  {% if toimitustapa['id']|string == (request.form['toimitustapa'] or product and product['toimitustapa_id'])|string %} selected {% endif %}>
-            {{ toimitustapa['kuvaus'] }}
-          </option>
-        {% endfor %}
-      </select>
+      <input type="text" name="lisätiedot" class="form-control"
+        value="{{ request.form['lisätiedot'] or product and (product['lisätiedot'] if product['lisätiedot']) }}">
+      </input>
     </div>
   </div>
   <div class="form-group row">
-    <label for="toimituspvm" class="col-lg-2 col-form-label">Toimituspäivämäärä</label>
+    <label for="tilaus_id" class="col-lg-2 col-form-label">Tilausnumero</label>
     <div class="col-lg-10">
-      <input type="text" id="datepicker2" name="toimituspvm" placeholder="VVVV-KK-PP" class="form-control"
-        value="{{ request.form['toimituspvm'] or product and (product['toimituspvm'] if product['toimituspvm']) }}">
+      <input type="text" name="tilaus_id" class="form-control"
+        value="{{ request.form['tilaus_id'] or product and (product['tilaus_id'] if product['tilaus_id']) }}">
       </input>
     </div>
   </div>

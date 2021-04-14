@@ -81,7 +81,7 @@ class SearchHelper:
         elif not values:
             self.no_results = True
 
-    def add_range(self, column, start=None, end=None):
+    def add_range(self, column, start: str = None, end: str = None):
         if start and end:
             if start == end:
                 self.search_conditions.append(f"{column} = ?")
@@ -131,9 +131,8 @@ def index():
 def products_json():
     search = request.args.get("search")
     order = request.args.get("order") or "DESC"
-    sort = request.args.get("sort") or "saapumispvm"
-    if sort in {"id", "saapumispvm", "kuvaus", "hinta", "toimituspvm",
-                "lisätiedot"}:
+    sort = request.args.get("sort") or "id"
+    if sort in {"id", "saapumispvm", "kuvaus", "hinta", "lisätiedot"}:
         sort = "T." + sort
     elif sort == "koodi":
         sort = "CAST(T.koodi AS INTEGER)"
@@ -150,15 +149,19 @@ def products_json():
           Sijainnit.kuvaus AS sijainti,
           Tilat.kuvaus AS tila,
           Toimitustavat.kuvaus AS toimitustapa,
-          T.toimituspvm,
+          Tilaukset.toimituspvm AS toimituspvm,
+          T.poistettu,
           T.lisätiedot,
           COUNT(*) OVER() AS total
         FROM
           Tuotteet T LEFT JOIN Sijainnit ON T.sijainti_id = Sijainnit.id
                      LEFT JOIN Tilat ON T.tila_id = Tilat.id
+                     LEFT JOIN Tilaukset ON T.tilaus_id = Tilaukset.id
                      LEFT JOIN Toimitustavat ON
-                               T.toimitustapa_id = Toimitustavat.id
+                               Tilaukset.toimitustapa_id = Toimitustavat.id
+                     LEFT JOIN Asiakkaat ON Tilaukset.asiakas_id = Asiakkaat.id
         """)
+    query.add_range("T.poistettu", "0", "0")
     regex_data = ("""
         IFNULL(T.saapumispvm, '-')
         || '¶' || IFNULL(T.kuvaus, '-')
@@ -166,14 +169,14 @@ def products_json():
         || '¶' || IFNULL(sijainti, '-')
         || '¶' || tila
         || '¶' || IFNULL(toimitustapa, '-')
-        || '¶' || IFNULL(T.toimituspvm, '-')
+        || '¶' || IFNULL(toimituspvm, '-')
         """)
     if search == "(tarkennettu haku)":
         query.add_range("CAST(T.koodi AS INTEGER)",
                         *request.args.get("numero").split(","))
         query.add_range("T.saapumispvm",
                         *request.args.get("saapumispvm").split(","))
-        query.add_range("T.toimituspvm",
+        query.add_range("toimituspvm",
                         *request.args.get("toimituspvm").split(","))
         query.add_multiselect("sijainti", request.args.get("sijainti"), 3)
         query.add_multiselect("tila", request.args.get("tila"), 3)
@@ -210,28 +213,24 @@ def product_json(product_id):
 def product_form_submit(conn, command, product_id=None):
     saapumispvm = request.form["saapumispvm"] or None  # "" or None => None
     kuvaus = request.form["kuvaus"]
+    hinta = request.form["hinta"] or None
     koodi = request.form["koodi"] or None
+    sijainti_id = request.form["sijainti_id"] or None
     tila_id = request.form["tila_id"]
-    toimitustapa_id = request.form["toimitustapa_id"] or None
-    toimituspvm = request.form["toimituspvm"] or None
+    lisätiedot = request.form["lisätiedot"] or None
+    tilaus_id = request.form["tilaus_id"] or None
 
-    args = [saapumispvm, kuvaus, koodi, tila_id, toimitustapa_id, toimituspvm]
+    args = [saapumispvm, kuvaus, hinta, koodi, sijainti_id, tila_id,
+            lisätiedot, tilaus_id]
     if product_id is not None:
         args.append(product_id)
 
     if not kuvaus:
         flash("Kuvaus on pakollinen.", "alert-danger")
     else:
-        try:
-            conn.execute(command, args)
-            conn.commit()
-        except sqlite3.IntegrityError as e:
-            if str(e) == "UNIQUE constraint failed: Tuotteet.koodi":
-                flash("Tuotteen numero on jo olemassa.", "alert-danger")
-            else:
-                flash(str(e), "alert-danger")
-        else:
-            return redirect(url_for("index"))
+        conn.execute(command, args)
+        conn.commit()
+        return redirect(url_for("index"))
     return None
 
 @app.route("/create", methods=("GET", "POST"))
@@ -242,11 +241,13 @@ def create():
                   INSERT INTO
                     tuotteet (saapumispvm,
                               kuvaus,
+                              hinta,
                               koodi,
+                              sijainti_id,
                               tila_id,
-                              toimitustapa_id,
-                              toimituspvm)
-                  VALUES (?, ?, ?, ?, ?, ?)
+                              lisätiedot,
+                              tilaus_id)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                   """
         redirect_url = product_form_submit(conn, command)
         if redirect_url:
@@ -255,9 +256,9 @@ def create():
             return redirect_url
 
     tilat = conn.execute("SELECT * FROM Tilat").fetchall()
-    toimitustavat = conn.execute("SELECT * FROM Toimitustavat").fetchall()
+    sijainnit = conn.execute("SELECT * FROM Sijainnit").fetchall()
     return render_template("create.html", tilat=tilat,
-                           toimitustavat=toimitustavat)
+                           sijainnit=sijainnit)
 
 @app.route("/<int:product_id>/edit", methods=("GET", "POST"))
 def edit(product_id):
@@ -269,10 +270,12 @@ def edit(product_id):
                   SET
                     saapumispvm = ?,
                     kuvaus = ?,
+                    hinta = ?,
                     koodi = ?,
+                    sijainti_id = ?,
                     tila_id = ?,
-                    toimitustapa_id = ?,
-                    toimituspvm = ?
+                    lisätiedot = ?,
+                    tilaus_id = ?
                   WHERE id = ?
                   """
         redirect_url = product_form_submit(conn, command, product_id)
@@ -283,15 +286,16 @@ def edit(product_id):
 
     product = get_product(product_id)
     tilat = conn.execute("SELECT * FROM Tilat").fetchall()
-    toimitustavat = conn.execute("SELECT * FROM Toimitustavat").fetchall()
+    sijainnit = conn.execute("SELECT * FROM Sijainnit").fetchall()
     return render_template("edit.html", product=product, tilat=tilat,
-                           toimitustavat=toimitustavat)
+                           sijainnit=sijainnit)
 
 @app.route("/<int:product_id>/delete", methods=("POST",))
 def delete(product_id):
     product = get_product(product_id)
     conn = get_db_connection()
-    conn.execute("DELETE FROM tuotteet WHERE id = ?", (product_id,))
+    conn.execute("UPDATE tuotteet SET poistettu = ? WHERE id = ?",
+                 (1, product_id))
     conn.commit()
     flash('Poistettiin tuote "{}".'.format(product["kuvaus"]), "alert-warning")
     return redirect(url_for("index"))

@@ -3,12 +3,12 @@ CREATE TABLE Tuotteet (
     saapumispvm TEXT,  -- local ISO 8601
     kuvaus TEXT NOT NULL CHECK (kuvaus <> ''),
     hinta TEXT CHECK (hinta <> ''),
-    koodi TEXT UNIQUE CHECK (koodi <> ''),
+    koodi TEXT CHECK (koodi <> ''),
     sijainti_id INTEGER REFERENCES Sijainnit(id),
     tila_id INTEGER NOT NULL REFERENCES Tilat(id),
-    toimitustapa_id INTEGER REFERENCES Toimitustavat(id),
-    toimituspvm TEXT,  -- local ISO 8601
-    lisätiedot TEXT);
+    lisätiedot TEXT,
+    tilaus_id INTEGER REFERENCES Tilaukset(id),
+    poistettu BOOLEAN DEFAULT 0 NOT NULL CHECK (poistettu IN (0, 1)));
 
 CREATE TABLE Sijainnit (id INTEGER PRIMARY KEY, kuvaus TEXT);
 
@@ -18,20 +18,33 @@ CREATE TABLE Toimitustavat (id INTEGER PRIMARY KEY, kuvaus TEXT);
 
 CREATE TABLE Muuttolaatikkovuokrat (
     id INTEGER PRIMARY KEY,
-    vuokralainen_id INTEGER NOT NULL REFERENCES Henkilöt(id),
+    asiakas_id INTEGER NOT NULL REFERENCES Asiakkaat(id),
     laatikoiden_määrä INTEGER NOT NULL,
     vastike TEXT,
-    alku_pvm TEXT,  -- local ISO 8601
-    loppu_pvm TEXT,  -- local ISO 8601
+    alkupvm TEXT,  -- local ISO 8601
+    loppupvm TEXT,  -- local ISO 8601
     lisätiedot TEXT,
-    CHECK (alku_pvm <= loppu_pvm));
+    CHECK (alkupvm <= loppupvm));
 
-CREATE TABLE Henkilöt (
+CREATE TABLE Asiakkaat (
     id INTEGER PRIMARY KEY, 
-    nimi TEXT NOT NULL CHECK(nimi <> ''));
+    nimi TEXT NOT NULL CHECK(nimi <> ''),
+    puhelinnumero TEXT,
+    osoite TEXT,
+    lisätiedot TEXT);
 
-CREATE TABLE Muuttujat (
+CREATE TABLE Tilaukset (
+    id INTEGER PRIMARY KEY,
+    asiakas_id INTEGER NOT NULL REFERENCES Asiakkaat(id),
+    toimitustapa_id INTEGER REFERENCES Toimitustavat(id),
+    toimituspvm TEXT,  -- local ISO 8601
+    varausnumero INTEGER,
+    lisätiedot TEXT,
+    poistettu BOOLEAN DEFAULT 0 NOT NULL CHECK (poistettu IN (0, 1)));
+
+CREATE TABLE Symbolit (
     id INTEGER PRIMARY KEY CHECK (id = 0),  -- allow only one row
+    tietokannan_versio INTEGER,
     muuttolaatikoiden_määrä INTEGER);
 
 CREATE TABLE Tapahtumaloki (
