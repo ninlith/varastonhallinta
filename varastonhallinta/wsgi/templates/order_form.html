@@ -1,0 +1,72 @@
+<div class="spacer"></div>
+
+<form method="post">
+  <div class="form-group row">
+    <label for="toimituspvm" class="col-lg-2 col-form-label">Toimituspäivämäärä</label>
+    <div class="col-lg-10">
+      <input type="text" id="datepicker" name="toimituspvm" placeholder="VVVV-KK-PP" class="form-control"
+        value="{{ request.form['toimituspvm'] or order and (order['toimituspvm'] if order['toimituspvm']) }}">
+        <!-- supress None by "x if x" -->
+      </input>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="toimitustapa" class="col-lg-2 col-form-label">Toimitustapa</label>
+    <div class="col-lg-10">
+      <select class="custom-select" id="toimitustapaselect" name=toimitustapa_id>
+        <option value=""></option>
+        {% for toimitustapa in toimitustavat %}
+          <option value="{{ toimitustapa['id'] }}"
+                  {% if toimitustapa['id']|string == (request.form['toimitustapa'] or order and order['toimitustapa_id'])|string %} selected {% endif %}>
+            {{ toimitustapa['kuvaus'] }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="varausnumero" class="col-lg-2 col-form-label">Varausnumero</label>
+    <div class="col-lg-10">
+      <input type="text" name="varausnumero" class="form-control"
+        value="{{ request.form['varausnumero'] or order and (order['varausnumero'] if order['varausnumero']) }}">
+      </input>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="nimi" class="col-lg-2 col-form-label">Asiakkaan nimi</label>
+    <div class="col-lg-10">
+      <input type="text" name="nimi" class="form-control"
+        value="{{ request.form['nimi'] or order and (order['nimi'] if order['nimi']) }}">
+      </input>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="puhelinnumero" class="col-lg-2 col-form-label">Asiakkaan puhelinnumero</label>
+    <div class="col-lg-10">
+      <input type="text" name="puhelinnumero" class="form-control"
+        value="{{ request.form['puhelinnumero'] or order and (order['puhelinnumero'] if order['puhelinnumero']) }}">
+      </input>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="osoite" class="col-lg-2 col-form-label">Asiakkaan osoite</label>
+    <div class="col-lg-10">
+      <textarea rows="3" name="osoite" class="form-control">{{ request.form['osoite'] or order and (order['osoite'] if order['osoite']) }}</textarea>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="tuotteet" class="col-lg-2 col-form-label">Tuotteet</label>
+    <div class="col-lg-10">
+      <textarea rows="3" name="tuotteet" class="form-control" readonly>{{ request.form['tuotteet'] or order and (order['tuotteet'] if order['tuotteet']) }}</textarea>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="lisätiedot" class="col-lg-2 col-form-label">Lisätiedot</label>
+    <div class="col-lg-10">
+      <input type="text" name="lisätiedot" class="form-control"
+        value="{{ request.form['lisätiedot'] or order and (order['lisätiedot'] if order['lisätiedot']) }}">
+      </input>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">{{ button_text }}</button>
+</form>

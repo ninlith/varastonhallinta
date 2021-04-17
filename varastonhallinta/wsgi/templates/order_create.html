@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% block title %} Lisää tilaus {% endblock %}</h1>
+
+{% set button_text = "Lisää" %}
+{% include 'order_form.html' %}
+
+{% endblock %}

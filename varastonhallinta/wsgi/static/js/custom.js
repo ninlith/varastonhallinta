@@ -64,6 +64,11 @@ function operationsFormatter(value, row, index, field) {
            + '<i class="fa fa-edit"></i> Muokkaa</a>'
 }
 
+function orderOperationsFormatter(value, row, index, field) {
+    return '<a href="' + value + '/order_edit" class="btn btn-sm btn-primary">'
+           + '<i class="fa fa-edit"></i> Muokkaa</a>'
+}
+
 // ----------------------------------------------------------------------------
 // bootstrap alert autoclose, https://stackoverflow.com/a/38837640
 // ----------------------------------------------------------------------------

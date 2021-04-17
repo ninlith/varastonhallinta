@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% block title %} Tilaukset {% endblock %}</h1>
+
+<div id="toolbar" class="d-print-none">
+  <a href="{{url_for('order_create')}}" class="btn btn-primary"><i class="fa fa-plus"></i> Lisää tilaus</a>
+</div>
+
+<table id="order_table"
+       data-toggle="table"
+       data-url="{{ url_for('orders_json') }}"
+       data-pagination="true"
+       data-page-list="[10, 25, 50, 100, 1000, all]"
+       data-side-pagination="server"
+       data-search="false"
+       data-toolbar="#toolbar"
+       data-show-columns="true"
+       data-show-columns-toggle-all="false"
+       data-mobile-responsive="true"
+       data-check-on-init="true"
+       data-cookie="true"
+       data-cookie-id-table="saveIdOrder"
+       data-id-field="id"
+       data-click-to-select="true"
+       data-trim-on-search="false"
+       data-show-search-clear-button="true">       
+  <thead>
+    <tr>
+      <th data-field="id"
+          data-title-tooltip="Tilausnumero"
+          data-sortable="true">
+        Tilausnro
+      </th>
+      <th data-field="toimituspvm"
+          data-title-tooltip="Toimituspäivämäärä"
+          data-sortable="true">
+        Toim.pvm.
+      </th>
+      <th data-field="toimitustapa"
+          data-title-tooltip="Toimitustapa"
+          data-sortable="true">
+        Toim.tapa
+      </th>
+      <th data-field="varausnumero"
+          data-title-tooltip="Varausnumero"
+          data-sortable="true">
+        Varausnro
+      </th>
+      <th data-field="asiakas"
+          data-title-tooltip="Asiakkaan nimi"
+          data-sortable="true">
+        Asiakas
+      </th>
+      <th data-field="asiakkaan_puhelinnumero"
+          data-title-tooltip="Asiakkaan puhelinnumero"
+          data-sortable="true">
+        As. puh.
+      </th>
+      <th data-field="asiakkaan_osoite"
+          data-title-tooltip="Asiakkaan osoite"
+          data-sortable="true">
+        As. osoite
+      </th>
+      <th data-field="tuotteet"
+          data-title-tooltip="Tuotteet"
+          data-sortable="true">
+        Tuotteet
+      </th>
+      <th data-field="lisätiedot"
+          data-title-tooltip="Tilauksen lisätiedot"
+          data-sortable="true">
+        Lisätiedot
+      </th>
+      <th data-field="id"
+          data-formatter="orderOperationsFormatter"
+          class="text-nowrap d-print-none"
+          data-switchable="false"
+          data-width="50">
+      </th>
+    </tr>
+  </thead>
+</table>
+
+{% endblock %}
