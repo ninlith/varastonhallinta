@@ -1,6 +1,6 @@
 # Copyright 2021 Okko Hartikainen <okko.hartikainen@gmail.com>
 #
-# This work is licensed under the GNU GPLv3. See LICENSE.
+# This work is licensed under the GNU GPLv3 only. See LICENSE.
 
 """Configuration-related classes and functions."""
 
