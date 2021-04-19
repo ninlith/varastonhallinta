@@ -177,6 +177,7 @@ def products_json():
           Tilat.kuvaus AS tila,
           Toimitustavat.kuvaus AS toimitustapa,
           Tilaukset.toimituspvm AS toimituspvm,
+          Tilaukset.varausnumero AS varausnumero,
           T.poistettu,
           T.lisätiedot,
           COUNT(*) OVER() AS total
