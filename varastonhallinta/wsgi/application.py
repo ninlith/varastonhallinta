@@ -7,6 +7,7 @@
 import logging
 import secrets
 import sqlite3
+from datetime import datetime, timezone
 from time import perf_counter
 import regex as re
 from flask import (Flask, render_template, request, url_for, flash, redirect,
@@ -20,9 +21,45 @@ def get_db_connection() -> sqlite3.Connection:
     conn = getattr(g, '_database', None)
     if conn is None:
         logger.debug("Opening database connection...")
-        conn = g._database = sqlite3.connect(app.config["database"])
+        conn = g._database = sqlite3.connect(app.config["database"],
+                                             factory=LoggingConnection)
     conn.row_factory = sqlite3.Row  # enables access by index or key
     return conn
+
+class LoggingConnection(sqlite3.Connection):
+    """Extend superclass for commit logging."""
+
+    class StatementContainer:
+        """Contain statements."""
+        def __init__(self):
+            self._data = []
+
+        def add_data(self, s):
+            s = s.strip()
+            if s not in ("BEGIN", "COMMIT"):
+                lines = s.splitlines()
+                self._data.append(" ".join([line.strip() for line in lines]))
+                logger.debug(self.data)
+
+        @property
+        def data(self):
+            return "; ".join(self._data)
+
+        def clear_data(self):
+            self._data.clear()
+
+    def cursor(self):
+        self.container = self.StatementContainer()
+        self.set_trace_callback(self.container.add_data)
+        return super().cursor()
+
+    def commit(self):
+        self.execute(
+            "INSERT INTO Muutosloki (aikaleima, komento) VALUES (?, ?)",
+            (datetime.now(timezone.utc).astimezone().isoformat(),
+             self.container.data))
+        self.container.clear_data()
+        super().commit()
 
 def get_product(product_id) -> sqlite3.Row:
     """Get product by given id."""
@@ -74,7 +111,6 @@ class SearchHelper:
             conn.create_function(
                 "REGEXP", 2,
                 lambda _, item: reg.search(item or "") is not None)
-        conn.set_trace_callback(logger.debug)
         command = "".join(self.command_parts)
         start = perf_counter()
         rows = conn.execute(command, self.parameters).fetchall()
