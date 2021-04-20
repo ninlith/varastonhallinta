@@ -8,7 +8,7 @@ CREATE TABLE Tuotteet (
     tila_id INTEGER NOT NULL REFERENCES Tilat(id),
     lisätiedot TEXT,
     tilaus_id INTEGER REFERENCES Tilaukset(id),
-    poistettu BOOLEAN DEFAULT 0 NOT NULL CHECK (poistettu IN (0, 1)));
+    arkistoitu BOOLEAN DEFAULT 0 NOT NULL CHECK (arkistoitu IN (0, 1)));
 
 CREATE TABLE Sijainnit (id INTEGER PRIMARY KEY, kuvaus TEXT);
 
@@ -31,7 +31,8 @@ CREATE TABLE Asiakkaat (
     nimi TEXT CHECK(nimi <> ''),
     puhelinnumero TEXT,
     osoite TEXT,
-    lisätiedot TEXT);
+    lisätiedot TEXT,
+    arkistoitu BOOLEAN DEFAULT 0 NOT NULL CHECK (arkistoitu IN (0, 1)));
 
 CREATE TABLE Tilaukset (
     id INTEGER PRIMARY KEY,
@@ -40,14 +41,14 @@ CREATE TABLE Tilaukset (
     toimituspvm TEXT,  -- local ISO 8601
     varausnumero INTEGER,
     lisätiedot TEXT,
-    poistettu BOOLEAN DEFAULT 0 NOT NULL CHECK (poistettu IN (0, 1)));
+    arkistoitu BOOLEAN DEFAULT 0 NOT NULL CHECK (arkistoitu IN (0, 1)));
 
 CREATE TABLE Symbolit (
     id INTEGER PRIMARY KEY CHECK (id = 0),  -- allow only one row
     tietokannan_versio INTEGER,
     muuttolaatikoiden_määrä INTEGER);
 
-CREATE TABLE Tapahtumaloki (
+CREATE TABLE Muutosloki (
     id INTEGER PRIMARY KEY, 
     aikaleima TEXT,  -- local ISO 8601 date and time w/ UTC offset
     komento TEXT);

@@ -178,7 +178,7 @@ def products_json():
           Toimitustavat.kuvaus AS toimitustapa,
           Tilaukset.toimituspvm AS toimituspvm,
           Tilaukset.varausnumero AS varausnumero,
-          T.poistettu,
+          T.arkistoitu,
           T.lisätiedot,
           COUNT(*) OVER() AS total
         FROM
@@ -189,7 +189,7 @@ def products_json():
                                Tilaukset.toimitustapa_id = Toimitustavat.id
                      LEFT JOIN Asiakkaat ON Tilaukset.asiakas_id = Asiakkaat.id
         """)
-    query.add_range("T.poistettu", "0", "0")
+    query.add_range("T.arkistoitu", "0", "0")
     regex_data = ("""
         IFNULL(T.saapumispvm, '-')
         || '¶' || IFNULL(T.kuvaus, '-')
@@ -297,8 +297,8 @@ def create():
     tilat = conn.execute("SELECT * FROM Tilat").fetchall()
     sijainnit = conn.execute("SELECT * FROM Sijainnit").fetchall()
     tilaukset = conn.execute(
-        "SELECT * FROM Tilaukset LEFT JOIN Asiakkaat ON "
-        "Tilaukset.asiakas_id = Asiakkaat.id WHERE poistettu = 0").fetchall()
+        "SELECT * FROM Tilaukset LEFT JOIN Asiakkaat ON Tilaukset.asiakas_id "
+        "= Asiakkaat.id WHERE Tilaukset.arkistoitu = 0").fetchall()
     return render_template("create.html", tilat=tilat,
                            sijainnit=sijainnit, tilaukset=tilaukset)
 
@@ -331,19 +331,19 @@ def edit(product_id):
     sijainnit = conn.execute("SELECT * FROM Sijainnit").fetchall()
     tilaukset = conn.execute(
         "SELECT * FROM Tilaukset LEFT JOIN Asiakkaat ON "
-        "Tilaukset.asiakas_id = Asiakkaat.id WHERE poistettu = 0 "
+        "Tilaukset.asiakas_id = Asiakkaat.id WHERE Tilaukset.arkistoitu = 0 "
         "ORDER BY Tilaukset.id DESC").fetchall()
     return render_template("edit.html", product=product, tilat=tilat,
                            sijainnit=sijainnit, tilaukset=tilaukset)
 
-@app.route("/<int:product_id>/delete", methods=("POST",))
-def delete(product_id):
+@app.route("/<int:product_id>/archive", methods=("POST",))
+def archive(product_id):
     product = get_product(product_id)
     conn = get_db_connection()
-    conn.execute("UPDATE tuotteet SET poistettu = ? WHERE id = ?",
+    conn.execute("UPDATE tuotteet SET arkistoitu = ? WHERE id = ?",
                  (1, product_id))
     conn.commit()
-    flash('Poistettiin tuote "{}".'.format(product["kuvaus"]), "alert-warning")
+    flash('Arkistoitiin tuote "{}".'.format(product["kuvaus"]), "alert-warning")
     return redirect(url_for("index"))
 
 @app.route("/orders_json")
@@ -359,7 +359,7 @@ def orders_json():
           Tilaukset.toimituspvm,
           Tilaukset.varausnumero,
           Tilaukset.lisätiedot,
-          Tilaukset.poistettu,
+          Tilaukset.arkistoitu,
           Toimitustavat.kuvaus AS toimitustapa,
           Asiakkaat.nimi AS asiakas,
           Asiakkaat.puhelinnumero AS asiakkaan_puhelinnumero,
@@ -373,7 +373,7 @@ def orders_json():
                     LEFT JOIN Asiakkaat ON Tilaukset.asiakas_id = Asiakkaat.id
                     LEFT JOIN Tuotteet ON Tilaukset.id = Tuotteet.tilaus_id
         """)
-    query.add_range("Tilaukset.poistettu", "0", "0")
+    query.add_range("Tilaukset.arkistoitu", "0", "0")
     query.append_where_clause()
     query.append(
         f"""
@@ -402,7 +402,7 @@ def order_form_submit(conn, commands: list, order_id=None):
     if order_id is not None:
         args.append(order_id)
     if not nimi:
-        flash("Nimi on pakollinen.", "alert-danger")
+        flash("Asiakkaan nimi on pakollinen.", "alert-danger")
         return None
     else:
         cursor = conn.cursor()
@@ -488,12 +488,12 @@ def order_edit(order_id):
     return render_template("order_edit.html", order=order,
                            toimitustavat=toimitustavat)
 
-@app.route("/<int:order_id>/order_delete", methods=("POST",))
-def order_delete(order_id):
+@app.route("/<int:order_id>/order_archive", methods=("POST",))
+def order_archive(order_id):
     order = get_order(order_id)
     conn = get_db_connection()
-    conn.execute("UPDATE tilaukset SET poistettu = ? WHERE id = ?",
+    conn.execute("UPDATE tilaukset SET arkistoitu = ? WHERE id = ?",
                  (1, order_id))
     conn.commit()
-    flash(f"Poistettiin tilaus #{order_id}.", "alert-warning")
+    flash(f"Arkistoitiin tilaus #{order_id}.", "alert-warning")
     return redirect(url_for("order_index"))

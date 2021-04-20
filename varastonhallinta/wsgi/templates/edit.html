@@ -3,31 +3,30 @@
 {% block content %}
 <h1>{% block title %} Muokkaa tuotetta "{{ product['kuvaus'] }}" {% endblock %}</h1>
 
-{% set button_text = "Muokkaa" %}
+{% set button_text = "Tallenna muutokset" %}
 {% include 'product_form.html' %}
 
 <hr>
-<button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalDelete">
-  Poista
+<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#modalArchive">
+  Arkistoi
 </button>
 
-<div class="modal fade" id="modalDelete" tabindex="-1" role="dialog" aria-labelledby="delete" aria-hidden="true">
+<div class="modal fade" id="modalArchive" tabindex="-1" role="dialog" aria-labelledby="archive" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Haluatko varmasti poistaa tuotteen "{{ product['kuvaus'] }}"?</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Arkistointi</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-<!--
       <div class="modal-body">
+        Haluatko varmasti arkistoida tuotteen "{{ product['kuvaus'] }}"?
       </div>
--->
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Peruuta</button>
-        <form action="{{ url_for('delete', product_id=product['id']) }}" method="POST">
-            <button type="submit" class="btn btn-danger">Poista</button>
+        <form action="{{ url_for('archive', product_id=product['id']) }}" method="POST">
+            <button type="submit" class="btn btn-warning">Arkistoi</button>
         </form>
       </div>
     </div>
