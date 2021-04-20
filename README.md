@@ -68,4 +68,4 @@ The following is for typical GNU/Linux systems. Adapt for other platforms.
         --hidden-import "colorlog" varastonhallinta.py
         
 ## License
-GNU GPLv3
+GNU GPLv3 only
