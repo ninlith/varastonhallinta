@@ -247,17 +247,28 @@ def product_form_submit(conn, command, product_id=None):
     tila_id = request.form["tila_id"]
     lisätiedot = request.form["lisätiedot"] or None
     tilaus_id = request.form["tilaus_id"] or None
-
-    args = [saapumispvm, kuvaus, hinta, koodi, sijainti_id, tila_id,
-            lisätiedot, tilaus_id]
-    if product_id is not None:
-        args.append(product_id)
-
+    uusi_tilaus = tilaus_id == "-1"
     if not kuvaus:
         flash("Kuvaus on pakollinen.", "alert-danger")
     else:
+        if uusi_tilaus:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO asiakkaat DEFAULT VALUES")
+            conn.commit()
+            asiakas_id = cursor.lastrowid
+            cursor.execute("INSERT INTO Tilaukset (asiakas_id) VALUES (?)",
+                           (asiakas_id,))
+            tilaus_id = cursor.lastrowid
+            conn.commit()
+            flash(f"Lisättiin tilaus #{tilaus_id}.", "alert-success")
+        args = [saapumispvm, kuvaus, hinta, koodi, sijainti_id, tila_id,
+                lisätiedot, tilaus_id]
+        if product_id is not None:
+            args.append(product_id)
         conn.execute(command, args)
         conn.commit()
+        if uusi_tilaus:
+            return redirect(url_for("order_edit", order_id=tilaus_id))
         return redirect(url_for("index"))
     return None
 
@@ -285,8 +296,11 @@ def create():
 
     tilat = conn.execute("SELECT * FROM Tilat").fetchall()
     sijainnit = conn.execute("SELECT * FROM Sijainnit").fetchall()
+    tilaukset = conn.execute(
+        "SELECT * FROM Tilaukset LEFT JOIN Asiakkaat ON "
+        "Tilaukset.asiakas_id = Asiakkaat.id WHERE poistettu = 0").fetchall()
     return render_template("create.html", tilat=tilat,
-                           sijainnit=sijainnit)
+                           sijainnit=sijainnit, tilaukset=tilaukset)
 
 @app.route("/<int:product_id>/edit", methods=("GET", "POST"))
 def edit(product_id):
@@ -315,8 +329,12 @@ def edit(product_id):
     product = get_product(product_id)
     tilat = conn.execute("SELECT * FROM Tilat").fetchall()
     sijainnit = conn.execute("SELECT * FROM Sijainnit").fetchall()
+    tilaukset = conn.execute(
+        "SELECT * FROM Tilaukset LEFT JOIN Asiakkaat ON "
+        "Tilaukset.asiakas_id = Asiakkaat.id WHERE poistettu = 0 "
+        "ORDER BY Tilaukset.id DESC").fetchall()
     return render_template("edit.html", product=product, tilat=tilat,
-                           sijainnit=sijainnit)
+                           sijainnit=sijainnit, tilaukset=tilaukset)
 
 @app.route("/<int:product_id>/delete", methods=("POST",))
 def delete(product_id):
@@ -462,7 +480,7 @@ def order_edit(order_id):
                     """]
         redirect_url = order_form_submit(conn, commands, order_id)
         if redirect_url:
-            flash("Muokattiin tilausta.", "alert-success")
+            flash(f"Muokattiin tilausta #{order_id}.", "alert-success")
             return redirect_url
 
     order = get_order(order_id)
@@ -477,5 +495,5 @@ def order_delete(order_id):
     conn.execute("UPDATE tilaukset SET poistettu = ? WHERE id = ?",
                  (1, order_id))
     conn.commit()
-    flash("Poistettiin tilaus", "alert-warning")
+    flash(f"Poistettiin tilaus #{order_id}.", "alert-warning")
     return redirect(url_for("order_index"))

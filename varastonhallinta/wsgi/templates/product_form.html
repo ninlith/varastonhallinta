@@ -70,11 +70,22 @@
     </div>
   </div>
   <div class="form-group row">
-    <label for="tilaus_id" class="col-lg-2 col-form-label">Tilausnumero</label>
+    <label for="tilaus_id" class="col-lg-2 col-form-label">Tilaus</label>
     <div class="col-lg-10">
-      <input type="text" name="tilaus_id" class="form-control"
-        value="{{ request.form['tilaus_id'] or product and (product['tilaus_id'] if product['tilaus_id']) }}">
-      </input>
+      <select  class="selectpicker w-100" data-live-search="true" name=tilaus_id title="">
+        <optgroup>
+          <option value=""></option>
+          <option value="-1">Lisää uuteen tilaukseen...</option>
+        </optgroup>
+        <optgroup label="Nykyiset tilaukset">
+        {% for tilaus in tilaukset %}
+          <option value="{{ tilaus['id'] }}"
+                  {% if tilaus['id']|string == (request.form['tilaus_id'] or product and product['tilaus_id'])|string %} selected {% endif %}>
+            #{{ tilaus['id'] }} {{ ( "(" + [tilaus['nimi'], tilaus['toimituspvm']] | reject("none") | join(', ') + ")" ) | replace("()", "") }}
+          </option>
+        {% endfor %}
+        </optgroup>
+      </select>
     </div>
   </div>
   <button type="submit" class="btn btn-primary">{{ button_text }}</button>

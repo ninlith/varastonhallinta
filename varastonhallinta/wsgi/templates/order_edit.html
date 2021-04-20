@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{% block title %} Muokkaa tilausta {% endblock %}</h1>
+<h1>{% block title %} Muokkaa tilausta #{{ order['id'] }} {% endblock %}</h1>
 
 {% set button_text = "Tallenna muutokset" %}
 {% include 'order_form.html' %}
@@ -15,7 +15,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Haluatko varmasti poistaa tilauksen"?</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Haluatko varmasti poistaa tilauksen #{{ order['id'] }}?</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>

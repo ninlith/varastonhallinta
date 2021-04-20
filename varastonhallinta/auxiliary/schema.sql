@@ -28,7 +28,7 @@ CREATE TABLE Muuttolaatikkovuokrat (
 
 CREATE TABLE Asiakkaat (
     id INTEGER PRIMARY KEY, 
-    nimi TEXT NOT NULL CHECK(nimi <> ''),
+    nimi TEXT CHECK(nimi <> ''),
     puhelinnumero TEXT,
     osoite TEXT,
     lisätiedot TEXT);
