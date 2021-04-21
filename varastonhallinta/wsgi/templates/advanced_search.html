@@ -12,22 +12,47 @@
         <div class="modal-body">
 
           <div class="form-group">
-            <div class="input-group">
-              <input type="text" class="form-control input-group-prepend" id="regex_search" placeholder="Säännöllinen lauseke...">
-              <div class="input-group-append">
-                <div class="input-group-text custom-control custom-checkbox">
-                  <input type="checkbox" class="custom-control-input ml-0" id="ignore_case" checked>
-                  <label class="custom-control-label ml-2" for="ignore_case">
-                    Ohita aakkoskoko 
-                    <!-- https://termipankki.fi/tepa/fi/haku/merkkikokoriippumaton -->
-                  </label>
+            <p>
+              <div class="input-group">
+                <input type="text" class="form-control input-group-prepend" id="regex_search" placeholder="Säännöllinen lauseke...">
+                <div class="input-group-append">
+                  <div class="input-group-text custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input ml-0" id="ignore_case" checked>
+                    <label class="custom-control-label ml-2" for="ignore_case">
+                      Ohita aakkoskoko
+                      <!-- https://termipankki.fi/tepa/fi/haku/merkkikokoriippumaton -->
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div>
-              <small id="regex_search_help" class="form-text text-muted">
-                Jokaisen rivin kentät on eroteltu kappaleen merkillä (¶).
-                <!-- Rivien määrä nolla tai enemmän. Passiivimuotoinen verbirakenne. -->
+            </p>
+            <p>
+              <button class="btn btn-info btn-sm" type="button" data-toggle="collapse" data-target="#regexHelp" aria-expanded="false" aria-controls="regexHelp">
+                <i class="fa fa-caret-down"></i>&nbsp;&nbsp;Säännöllisten lausekkeiden perusteet
+              </button>
+            </p>
+            <div class="collapse" id="regexHelp">
+              <small>
+                <table data-toggle="table" data-classes="table table-bordered">
+                  <thead>
+                    <tr><th>Merkintä</th><th>Selitys</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>foo</td><td>merkkijono foo</td></tr>
+                    <tr><td>.</td><td>mikä tahansa merkki</td></tr>
+                    <tr><td>[abc]</td><td>merkki a, b tai c</td></tr>
+                    <tr><td>[^abc]</td><td>mikä tahansa merkki paitsi a, b tai c</td></tr>
+                    <tr><td>\?</td><td>merkki ? (samoin \*, \. jne.)</td></tr>
+                    <tr><td>^</td><td>tietueen alku</td></tr>
+                    <tr><td>$</td><td>tietueen loppu</td></tr>
+                    <tr><td>*</td><td>edellinen lausekkeen osa 0–∞ kertaa</td></tr>
+                    <tr><td>+</td><td>edellinen lausekkeen osa 1–∞ kertaa</td></tr>
+                    <tr><td>?</td><td>edellinen lausekkeen osa 0–1 kertaa</td></tr>
+                    <tr><td>{m,n}</td><td>edellinen lausekkeen osa m–n kertaa</td></tr>
+                    <tr><td>(foo)</td><td>ryhmittely mm. operaattoreita *, +, ? varten</td></tr>
+                    <tr><td>foo|bar</td><td>foo tai bar</td></tr>
+                  </tbody>
+                </table>
               </small>
             </div>
           </div>
@@ -41,6 +66,19 @@
                     <span class="input-group-text">–</span>
                   </div>
                   <input type="text" class="form-control input-group-append" id="saapumispvm_loppu" />
+                </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="hinta" class="col-sm-2 col-form-label">Hinta</label>
+            <div class="col-sm-10">
+                <div class="input-group" id="hinta">
+                  <input type="text" class="form-control input-group-prepend" id="hinta_alku" />
+                  <div class="input-group-append">
+                    <span class="input-group-text">–</span>
+                  </div>
+                  <input type="text" class="form-control input-group-append" id="hinta_loppu" />
                 </div>
             </div>
           </div>
@@ -81,6 +119,19 @@
           </div>
 
           <div class="form-group row">
+            <label for="varausnumero" class="col-sm-2 col-form-label">Varausnumero</label>
+            <div class="col-sm-10">
+                <div class="input-group" id="varausnumero">
+                  <input type="text" class="form-control input-group-prepend" id="varausnumero_alku" />
+                  <div class="input-group-append">
+                    <span class="input-group-text">–</span>
+                  </div>
+                  <input type="text" class="form-control input-group-append" id="varausnumero_loppu" />
+                </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
             <label for="toimitustapa" class="col-sm-2 col-form-label">Toimitustapa</label>
             <div class="col-sm-10">
               <select id="toimitustapa" class="selectpicker w-100" multiple>
@@ -101,6 +152,16 @@
                   </div>
                   <input type="text" class="form-control input-group-append" id="toimituspvm_loppu" />
                 </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="arkistoitu" class="col-sm-2 col-form-label">Arkistoitu</label>
+            <div class="col-sm-10">
+              <select id="arkistoitu" class="selectpicker w-100" multiple>
+                <option value="1">tosi</option>
+                <option selected value="0">epätosi</option>
+              </select>
             </div>
           </div>
 

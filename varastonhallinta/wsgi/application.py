@@ -109,8 +109,7 @@ class SearchHelper:
         reg = self.precompiled_regex_pattern
         if reg:
             conn.create_function(
-                "REGEXP", 2,
-                lambda _, item: reg.search(item or "") is not None)
+                "REG", 1, lambda item: reg.search(item or "") is not None)
         command = "".join(self.command_parts)
         start = perf_counter()
         rows = conn.execute(command, self.parameters).fetchall()
@@ -167,8 +166,7 @@ class SearchHelper:
             logger.debug(f"Invalid regular expression: {e}")
             self.no_results = True
         else:
-            self.search_conditions.append(f"{data} REGEXP ?")
-            self.parameters.append(pattern)
+            self.search_conditions.append(f"{data}")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = secrets.token_urlsafe(16)  # for the session cookie
@@ -225,16 +223,18 @@ def products_json():
                                Tilaukset.toimitustapa_id = Toimitustavat.id
                      LEFT JOIN Asiakkaat ON Tilaukset.asiakas_id = Asiakkaat.id
         """)
-    query.add_range("T.arkistoitu", "0", "0")
     regex_data = ("""
-        IFNULL(T.saapumispvm, '-')
-        || '¶' || IFNULL(T.kuvaus, '-')
-        || '¶' || IFNULL(T.koodi, '-')
-        || '¶' || IFNULL(sijainti, '-')
-        || '¶' || tila
-        || '¶' || IFNULL(toimitustapa, '-')
-        || '¶' || IFNULL(toimituspvm, '-')
-        """)
+                  (REG(IFNULL(T.saapumispvm, '-'))
+                  OR REG(IFNULL(T.kuvaus, '-'))
+                  OR REG(IFNULL(T.hinta, '-'))
+                  OR REG(IFNULL(T.koodi, '-'))
+                  OR REG(IFNULL(sijainti, '-'))
+                  OR REG(tila)
+                  OR REG(IFNULL(toimitustapa, '-'))
+                  OR REG(IFNULL(toimituspvm, '-'))
+                  OR REG(IFNULL(CAST(varausnumero AS TEXT), '-'))
+                  OR REG(IFNULL(T.lisätiedot, '-')))
+                  """)
     if search == "(tarkennettu haku)":
         query.add_range("CAST(T.koodi AS INTEGER)",
                         *request.args.get("numero").split(","))
@@ -242,18 +242,28 @@ def products_json():
                         *request.args.get("saapumispvm").split(","))
         query.add_range("toimituspvm",
                         *request.args.get("toimituspvm").split(","))
+        query.add_range("varausnumero",
+                        *request.args.get("varausnumero").split(","))
+        query.add_range("T.hinta",
+                        *request.args.get("hinta").split(","))
         query.add_multiselect("sijainti", request.args.get("sijainti"), 3)
         query.add_multiselect("tila", request.args.get("tila"), 3)
         query.add_multiselect("toimitustapa",
                               request.args.get("toimitustapa"),
                               3)
+        query.add_multiselect("T.arkistoitu",
+                              request.args.get("arkistoitu"),
+                              2)
         regex_search = request.args.get("regex_search")
         if regex_search:
             query.set_regex(regex_data,
                             regex_search,
                             request.args.get("ignore_case") == 'true')
     elif search:
+        query.add_range("T.arkistoitu", "0", "0")
         query.set_regex(regex_data, search, True)
+    else:
+        query.add_range("T.arkistoitu", "0", "0")
     if query.no_results:
         return jsonify({"total": 0, "rows": []})
     query.append_where_clause()

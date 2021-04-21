@@ -26,6 +26,17 @@ function queryParams(params) {
         document.getElementById("toimituspvm_alku").value,
         document.getElementById("toimituspvm_loppu").value
         ].join(",")
+    params.hinta = [
+        document.getElementById("hinta_alku").value,
+        document.getElementById("hinta_loppu").value
+        ].join(",")
+    params.varausnumero = [
+        document.getElementById("varausnumero_alku").value,
+        document.getElementById("varausnumero_loppu").value
+        ].join(",")
+    params.arkistoitu = Array.from(
+            document.querySelectorAll("#arkistoitu option:checked")
+        ).map(o => o.value).join(",")
     params.sijainti = Array.from(
             document.querySelectorAll("#sijainti option:checked")
         ).map(o => o.value).join(",")
