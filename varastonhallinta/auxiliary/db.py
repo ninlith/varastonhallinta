@@ -26,7 +26,7 @@ def ensure_database(database: str) -> pathlib.Path:
     """Create database if it doesn't exist."""
     # Get database path.
     if database is None:
-        database = ensure_user_data_dir() / f"varasto-v{DB_VERSION}.sqlite3"
+        database = ensure_user_data_dir() / "varasto.sqlite3"
     else:
         database = pathlib.Path(database)
     logger.info(f"database = {database}")
@@ -53,5 +53,7 @@ def create_database(pathname: pathlib.Path):
         importlib.resources.read_text(__package__, "schema.sql"))
     connection.executescript(
         importlib.resources.read_text(__package__, "initial_data.sql"))
+    connection.execute(
+        "UPDATE Symbolit SET tietokannan_versio = ?", DB_VERSION)
     connection.commit()
     connection.close()
