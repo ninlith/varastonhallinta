@@ -81,6 +81,7 @@ def get_order(order_id) -> sqlite3.Row:
 	      Tilaukset.toimituspvm,
 	      Tilaukset.varausnumero,
 	      Tilaukset.lisätiedot,
+	      Tilaukset.arkistoitu,
 	      Asiakkaat.nimi,
 	      Asiakkaat.puhelinnumero,
 	      Asiakkaat.osoite,
@@ -392,6 +393,17 @@ def archive(product_id):
     flash('Arkistoitiin tuote "{}".'.format(product["kuvaus"]), "alert-warning")
     return redirect(url_for("index"))
 
+@app.route("/<int:product_id>/unarchive", methods=("POST",))
+def unarchive(product_id):
+    product = get_product(product_id)
+    conn = get_db_connection()
+    conn.execute("UPDATE tuotteet SET arkistoitu = ? WHERE id = ?",
+                 (0, product_id))
+    conn.commit()
+    flash('Palautettiin tuote "{}" arkistosta.'.format(product["kuvaus"]),
+          "alert-warning")
+    return redirect(url_for("index"))
+
 @app.route("/orders_json")
 def orders_json():
     search = request.args.get("search")
@@ -542,4 +554,14 @@ def order_archive(order_id):
                  (1, order_id))
     conn.commit()
     flash(f"Arkistoitiin tilaus #{order_id}.", "alert-warning")
+    return redirect(url_for("order_index"))
+
+@app.route("/<int:order_id>/order_unarchive", methods=("POST",))
+def order_unarchive(order_id):
+    order = get_order(order_id)
+    conn = get_db_connection()
+    conn.execute("UPDATE tilaukset SET arkistoitu = ? WHERE id = ?",
+                 (0, order_id))
+    conn.commit()
+    flash(f"Palautettiin tilaus #{order_id} arkistosta.", "alert-warning")
     return redirect(url_for("order_index"))

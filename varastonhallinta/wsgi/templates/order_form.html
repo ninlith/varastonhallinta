@@ -1,6 +1,7 @@
 <div class="spacer"></div>
 
 <form method="post">
+{% if archived %}<fieldset disabled="disabled">{% endif %}
   <div class="form-group row">
     <label for="toimituspvm" class="col-lg-2 col-form-label">Toimituspäivämäärä</label>
     <div class="col-lg-10">
@@ -68,5 +69,8 @@
       </input>
     </div>
   </div>
+  {% if not archived %}
   <button type="submit" class="btn btn-primary">{{ button_text }}</button>
+  {% endif %}
+{% if archived %}</fieldset>{% endif %}
 </form>
