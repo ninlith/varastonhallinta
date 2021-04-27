@@ -8,7 +8,7 @@ import logging
 from contextlib import redirect_stdout
 from paste.translogger import TransLogger  # middleware for logging requests
 from waitress import serve
-from wsgi.application import app
+from wsgi.application.flask_app import app
 
 def wsgi_server(sockets, database, translogger=False, dev=False,
                 configurer=None):

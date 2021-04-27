@@ -5,7 +5,7 @@
 
 {% set button_text = "Tallenna muutokset" %}
 {% if product['arkistoitu'] == 1 %}{% set archived = True %}{% endif %}
-{% include 'product_form.html' %}
+{% include 'products/form.html' %}
 
 <hr>
 {% if product['arkistoitu'] == 0 %}
