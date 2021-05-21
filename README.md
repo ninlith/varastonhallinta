@@ -25,6 +25,7 @@ All arguments are optional.
       --database PATHNAME   relative or absolute path to a database file (defaults
                             to using an .sqlite3 file within user application data
                             directory)
+      --backup PATHNAME     backup and exit
       --server-only         run in server mode
       --client-only [{http,https}]
                             run in client mode [URI scheme (default: http)]

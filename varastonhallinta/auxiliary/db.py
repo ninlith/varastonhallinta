@@ -57,3 +57,16 @@ def create_database(pathname: pathlib.Path):
         "UPDATE Symbolit SET tietokannan_versio = ?", DB_VERSION)
     connection.commit()
     connection.close()
+
+def backup_database(source: pathlib.Path, destination: pathlib.Path):
+    def progress(status, remaining, total):
+        print(f"Copied {total-remaining} of {total} pages...", end="\r")
+
+    con = sqlite3.connect(ensure_database(source))
+    bck = sqlite3.connect(destination)
+    logger.info(f"Backing up to {destination}...")
+    with bck:
+        con.backup(bck, pages=1, progress=progress)
+    bck.close()
+    con.close()
+    logger.info(f"Database backed up.")

@@ -25,15 +25,6 @@ def main():
 
     # Command-line arguments.
     args = conf.parse_command_line_args()
-    if args.version:
-        print(conf.VERSION)
-        sys.exit()
-
-    # Legal notice.
-    print("Copyright 2021 Okko Hartikainen <okko.hartikainen@gmail.com>\n\n"
-          "This program comes with ABSOLUTELY NO WARRANTY. "
-          "See the GNU General Public\nLicence, version 3 "
-          "<https://www.gnu.org/licenses/gpl-3.0.html> for details.\n")
 
     # Logging.
     queue = multiprocessing.Queue(-1)
@@ -45,6 +36,21 @@ def main():
     if os.name == "posix":
         configurer = None  # root logger propagates its handler
     logger = logging.getLogger(__name__)
+
+    if args.version:
+        print(conf.VERSION)
+        queue.put_nowait(None)
+        sys.exit()
+    elif args.backup:
+        db.backup_database(args.database, args.backup)
+        queue.put_nowait(None)
+        sys.exit()
+
+    # Legal notice.
+    print("Copyright 2021 Okko Hartikainen <okko.hartikainen@gmail.com>\n\n"
+          "This program comes with ABSOLUTELY NO WARRANTY. "
+          "See the GNU General Public\nLicence, version 3 "
+          "<https://www.gnu.org/licenses/gpl-3.0.html> for details.\n")
 
     with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as sock:
         if not args.client_only:

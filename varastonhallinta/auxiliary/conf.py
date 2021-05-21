@@ -48,6 +48,7 @@ def parse_command_line_args() -> argparse.Namespace:
         "--database", metavar="PATHNAME",
         help="relative or absolute path to a database file (defaults to using "
              "an .sqlite3 file within user application data directory)")
+    parser.add_argument("--backup", metavar="PATHNAME", help="backup and exit")
     mode_group = parser.add_mutually_exclusive_group()
     mode_group.add_argument(
         "--server-only", action="store_true", help="run in server mode")
