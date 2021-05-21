@@ -65,10 +65,12 @@ def products_json():
     search = request.args.get("search")
     order = request.args.get("order") or "DESC"
     sort = request.args.get("sort") or "id"
-    if sort in {"id", "saapumispvm", "kuvaus", "hinta", "lisätiedot"}:
+    if sort in {"id", "saapumispvm", "kuvaus", "lisätiedot"}:
         sort = "T." + sort
     elif sort == "koodi":
         sort = "CAST(T.koodi AS INTEGER)"
+    elif sort == "hinta":
+        sort = "CAST(REPLACE(T.hinta, ',', '.') AS REAL)"
 
     query = SearchHelper()
     query.append(
@@ -116,7 +118,7 @@ def products_json():
                         *request.args.get("toimituspvm").split(","))
         query.add_range("varausnumero",
                         *request.args.get("varausnumero").split(","))
-        query.add_range("T.hinta",
+        query.add_range("CAST(REPLACE(T.hinta, ',', '.') AS REAL)",
                         *request.args.get("hinta").split(","))
         query.add_multiselect("sijainti", request.args.get("sijainti"), 3)
         query.add_multiselect("tila", request.args.get("tila"), 3)
