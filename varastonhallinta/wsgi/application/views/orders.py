@@ -104,7 +104,7 @@ def orders_json():
         f"""
         GROUP BY
           Tilaukset.id
-        ORDER BY {sort} {order}
+        ORDER BY {sort} COLLATE NOCASE {order}
         LIMIT ?
         OFFSET ?
         """,

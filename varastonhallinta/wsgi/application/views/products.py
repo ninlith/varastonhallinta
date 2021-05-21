@@ -141,7 +141,7 @@ def products_json():
     query.append_where_clause()
     query.append(
         f"""
-        ORDER BY {sort} {order}
+        ORDER BY {sort} COLLATE NOCASE {order}
         LIMIT ?
         OFFSET ?
         """,
