@@ -10,7 +10,7 @@ import logging
 import logging.config
 
 PROJECT_NAME = "varastonhallinta"
-VERSION = "1.0.0"  # semantic- or serialization-like versioning
+VERSION = "1.1.0"  # semantic- or serialization-like versioning
 DB_VERSION = VERSION.split(".")[0]
 
 def parse_command_line_args() -> argparse.Namespace:
