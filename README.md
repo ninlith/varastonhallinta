@@ -9,7 +9,7 @@ Requires a browser (engine). Chromium is recommended for running in app mode.
 ## Usage
 All arguments are optional.
 
-    usage: varastonhallinta.py [-h] [--database PATHNAME]
+    usage: varastonhallinta.py [-h] [--database PATHNAME] [--backup PATHNAME]
                                [--server-only | --client-only [{http,https}]]
                                [--debug] [--translogger] [--version] [--host HOST]
                                [--port PORT] [--flowinfo FLOWINFO]
